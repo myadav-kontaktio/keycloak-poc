@@ -1,39 +1,44 @@
 <template>
   <div class="mdWrapper">
-      <h3>Keycloak - OIDC</h3>
-      <h4>Vue JS - Implicit flow authentication</h4>
-      <button class="btn-normal" v-on:click="authenticateLogin">Login</button>
+    <h3>Keycloak - OIDC</h3>
+    <h4>Vue JS - Implicit flow authentication</h4>
+    <button class="btn-normal" @click="authenticateLogin">Login</button>
   </div>
 </template>
 
 <script>
-  import Keycloak from 'keycloak-js'
-  import { CookieName, Config } from '../model/Config';
-  import { SetCookieValue } from '../model/Functions';
-  let keycloak = Keycloak(Config);
-  export default {
-    name: 'Home',
-    created: function(){
-      keycloak.init({ flow: 'implicit', checkLoginIframe: false }).then((authenticated) => {
-        try{
-          if(!authenticated) {
+import KeycloakService from '../services/KeycloakService';
+
+export default {
+  name: 'Home',
+  data() {
+    return {
+      keycloakService: null,
+    };
+  },
+  created() {
+    this.keycloakService = new KeycloakService();
+    this.initializeKeycloak();
+  },
+  methods: {
+    initializeKeycloak() {
+      this.keycloakService.keycloak.init({ flow: 'implicit', checkLoginIframe: false })
+        .then(authenticated => {
+          if (!authenticated) {
             console.log("Not Authenticated");
-            return false;
-          } else {
-            console.log("Authenticated");
+            return;
           }
-          SetCookieValue(CookieName, keycloak.token);
-          this.$router.push({name: 'AuthorisedPage'})
-        }
-        catch(error){
-          console.log("Authenticated failed due to \n" + error);
-        }
-      })
+          console.log("Authenticated");
+          this.keycloakService.setCookieValue(this.keycloakService.cookieName, this.keycloakService.keycloak.token);
+          this.$router.push({ name: 'AuthorisedPage' });
+        })
+        .catch(error => {
+          console.log("Authentication failed due to:", error);
+        });
     },
-    methods: {
-      authenticateLogin: function(){
-        keycloak.login({ redirectUri: window.location.origin })
-      }
+    authenticateLogin() {
+      this.keycloakService.keycloak.login({ redirectUri: window.location.origin });
     }
   }
+};
 </script>
