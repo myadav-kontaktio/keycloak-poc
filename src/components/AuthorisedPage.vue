@@ -1,6 +1,5 @@
 <template>
   <div class="mdWrapper">
-      <img :src="require('../assets/images/logo.png')" alt="Keyclock OIDC"/>
       <h3>Keycloak - OIDC</h3>
       <h4>Vue JS - Implicit flow authentication</h4>
       <h5>{{username}}</h5>
